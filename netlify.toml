@@ -1,0 +1,28 @@
+# ──────────────────────────────────────────────
+# Lufora — Netlify Deployment Configuration
+# ──────────────────────────────────────────────
+
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "18"
+  NPM_FLAGS = "--legacy-peer-deps"
+  # Prisma generate runs automatically via the build script and postinstall hook
+
+# Next.js plugin handles SSR, API routes, and serverless functions
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Headers for security and caching
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+
+[[headers]]
+  for = "/_next/static/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

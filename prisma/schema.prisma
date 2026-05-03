@@ -1,0 +1,261 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")     // Neon: non-pooled connection for migrations
+}
+
+// ─── USER ───
+model User {
+  id            String   @id @default(cuid())
+  name          String
+  email         String   @unique
+  passwordHash  String?
+  avatarUrl     String?
+  level         Int      @default(1)
+  totalPoints   Int      @default(0)
+  currentStreak Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  plants            Plant[]
+  growJourneys      GrowJourney[]
+  tasks             PlantTask[]
+  badges            UserBadge[]
+  communityPosts    CommunityPost[]
+  communityReplies  CommunityReply[]
+  pointTransactions PointTransaction[]
+}
+
+// ─── PLANT ───
+model Plant {
+  id            String    @id @default(cuid())
+  userId        String
+  nickname      String
+  species       String?
+  imageUrl      String?
+  roomLocation  String?
+  lightLevel    String?
+  hasDrainage   Boolean   @default(true)
+  city          String?
+  lastWateredAt DateTime?
+  healthScore   Int       @default(80)
+  status        String    @default("active") // active | archived
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user          User              @relation(fields: [userId], references: [id])
+  tasks         PlantTask[]
+  growthPhotos  PlantGrowthPhoto[]
+  healthLogs    PlantHealthLog[]
+  communityPosts CommunityPost[]
+
+  @@index([userId])
+}
+
+// ─── PLANT GROWTH PHOTO ───
+model PlantGrowthPhoto {
+  id        String   @id @default(cuid())
+  plantId   String
+  imageUrl  String
+  note      String?
+  createdAt DateTime @default(now())
+
+  plant Plant @relation(fields: [plantId], references: [id], onDelete: Cascade)
+
+  @@index([plantId])
+}
+
+// ─── PLANT HEALTH LOG ───
+model PlantHealthLog {
+  id        String   @id @default(cuid())
+  plantId   String
+  score     Int
+  status    String?
+  aiSummary String?
+  createdAt DateTime @default(now())
+
+  plant Plant @relation(fields: [plantId], references: [id], onDelete: Cascade)
+
+  @@index([plantId])
+}
+
+// ─── GROW JOURNEY ───
+model GrowJourney {
+  id              String    @id @default(cuid())
+  userId          String
+  plantName       String
+  startingType    String    // seed | seedling | cutting | bulb_tuber
+  currentStage    String    @default("setup")
+  // setup | germination | sprout | seedling | pot_transfer | young_plant | mature_plant
+  dayNumber       Int       @default(1)
+  progressPercent Int       @default(0)
+  imageUrl        String?
+  environmentType String?   // indoor | outdoor | greenhouse
+  city            String?
+  lightLevel      String?
+  growingMedium   String?
+  containerType   String?
+  status          String    @default("active") // active | completed | paused
+  pointsEarned    Int       @default(0)
+  startedAt       DateTime  @default(now())
+  completedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user       User                  @relation(fields: [userId], references: [id])
+  tasks      PlantTask[]
+  photos     GrowJourneyPhoto[]
+  milestones GrowJourneyMilestone[]
+  communityPosts CommunityPost[]
+
+  @@index([userId])
+  @@index([status])
+}
+
+// ─── GROW JOURNEY PHOTO ───
+model GrowJourneyPhoto {
+  id            String   @id @default(cuid())
+  growJourneyId String
+  imageUrl      String
+  note          String?
+  stage         String
+  createdAt     DateTime @default(now())
+
+  growJourney GrowJourney @relation(fields: [growJourneyId], references: [id], onDelete: Cascade)
+
+  @@index([growJourneyId])
+}
+
+// ─── GROW JOURNEY MILESTONE ───
+model GrowJourneyMilestone {
+  id            String    @id @default(cuid())
+  growJourneyId String
+  title         String
+  description   String?
+  stage         String
+  reachedAt     DateTime?
+  points        Int       @default(0)
+  badgeCode     String?
+  createdAt     DateTime  @default(now())
+
+  growJourney GrowJourney @relation(fields: [growJourneyId], references: [id], onDelete: Cascade)
+
+  @@index([growJourneyId])
+}
+
+// ─── PLANT TASK (shared: Plant or GrowJourney) ───
+model PlantTask {
+  id            String    @id @default(cuid())
+  userId        String
+  plantId       String?
+  growJourneyId String?
+  title         String
+  description   String?
+  type          String    // watering | soil_check | photo_update | leaf_cleaning | fertilizing | health_check | grow_milestone | grow_environment_check | custom
+  dueDate       DateTime
+  completedAt   DateTime?
+  points        Int       @default(10)
+  status        String    @default("pending") // pending | completed | skipped
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user       User         @relation(fields: [userId], references: [id])
+  plant      Plant?       @relation(fields: [plantId], references: [id], onDelete: Cascade)
+  growJourney GrowJourney? @relation(fields: [growJourneyId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([plantId])
+  @@index([growJourneyId])
+  @@index([dueDate])
+  @@index([status])
+}
+
+// ─── BADGE ───
+model Badge {
+  id           String   @id @default(cuid())
+  code         String   @unique
+  name         String
+  description  String
+  category     String   // plant_care | grow_journey | community | streak
+  icon         String?
+  pointsReward Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  users UserBadge[]
+}
+
+// ─── USER BADGE ───
+model UserBadge {
+  id         String   @id @default(cuid())
+  userId     String
+  badgeId    String
+  unlockedAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id])
+  badge Badge @relation(fields: [badgeId], references: [id])
+
+  @@unique([userId, badgeId])
+}
+
+// ─── COMMUNITY POST ───
+model CommunityPost {
+  id               String   @id @default(cuid())
+  userId           String
+  plantId          String?
+  growJourneyId    String?
+  title            String
+  content          String
+  category         String   @default("care_tips")
+  imageUrl         String?
+  hasAiAnalysis    Boolean  @default(false)
+  aiAnalysisSummary String?
+  likesCount       Int      @default(0)
+  repliesCount     Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user       User             @relation(fields: [userId], references: [id])
+  plant      Plant?           @relation(fields: [plantId], references: [id])
+  growJourney GrowJourney?    @relation(fields: [growJourneyId], references: [id])
+  replies    CommunityReply[]
+
+  @@index([userId])
+  @@index([category])
+}
+
+// ─── COMMUNITY REPLY ───
+model CommunityReply {
+  id               String   @id @default(cuid())
+  postId           String
+  userId           String
+  content          String
+  isExperiencedUser Boolean @default(false)
+  isAiGenerated    Boolean  @default(false)
+  likesCount       Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  post CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User          @relation(fields: [userId], references: [id])
+
+  @@index([postId])
+}
+
+// ─── POINT TRANSACTION ───
+model PointTransaction {
+  id         String   @id @default(cuid())
+  userId     String
+  sourceType String   // task | badge | grow_milestone | community | streak
+  sourceId   String?
+  points     Int
+  reason     String
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
