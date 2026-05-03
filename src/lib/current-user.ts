@@ -1,32 +1,20 @@
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import prisma from "./prisma";
 
 /**
- * ┌─────────────────────────────────────────────────────────┐
- * │  ⚠️  MOCK CURRENT USER — MVP/DEMO ONLY                │
- * │                                                         │
- * │  This returns the first user in the database            │
- * │  (Ada Green from seed data) as the "logged in" user.    │
- * │                                                         │
- * │  TODO: Replace with real NextAuth session in Phase 6:   │
- * │    1. Set up NextAuth with Google/GitHub provider        │
- * │    2. Import getServerSession from next-auth             │
- * │    3. Look up user by session.user.email                 │
- * │    4. Return null if no session                          │
- * │                                                         │
- * │  Example real implementation:                            │
- * │    import { getServerSession } from "next-auth";         │
- * │    import { authOptions } from "@/app/api/auth/[...nextauth]/route"; │
- * │    const session = await getServerSession(authOptions);  │
- * │    if (!session?.user?.email) return null;               │
- * │    return prisma.user.findUnique({                       │
- * │      where: { email: session.user.email }                │
- * │    });                                                   │
- * └─────────────────────────────────────────────────────────┘
+ * Get current authenticated user from NextAuth session.
+ * Returns null if not logged in.
  */
 export async function getCurrentUser() {
-  // Mock: return first user (Ada Green from seed data)
-  const user = await prisma.user.findFirst({
-    orderBy: { createdAt: "asc" },
+  const session = await getServerSession(authOptions);
+  
+  if (!session?.user?.email) {
+    return null;
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email },
   });
 
   return user;
@@ -41,4 +29,16 @@ export async function requireCurrentUser() {
     throw new Error("UNAUTHORIZED");
   }
   return user;
+}
+
+/**
+ * Convenience method to just get the user ID if we don't need the whole record.
+ */
+export async function getCurrentUserId() {
+  const session = await getServerSession(authOptions);
+  // Using the custom added session.user.id if available, otherwise fallback
+  if (session?.user && "id" in session.user) {
+    return session.user.id as string;
+  }
+  return null;
 }

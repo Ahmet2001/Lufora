@@ -6,8 +6,6 @@ import { success, unauthorized, notFound, validationError } from "@/lib/api-help
 import { updatePostSchema } from "@/lib/validations";
 
 export async function GET(_req: Request, { params }: { params: { id: string } }) {
-  const user = await getCurrentUser();
-  if (!user) return unauthorized();
 
   const post = await prisma.communityPost.findUnique({
     where: { id: params.id },

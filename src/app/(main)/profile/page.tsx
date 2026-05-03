@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { signOut } from "next-auth/react";
 import { ChevronRight, Crown, Flame, HelpCircle, Leaf, LogOut, Settings, Sprout, Star, Trophy, Globe, Lock } from "lucide-react";
 import Link from "next/link";
 import Avatar from "@/components/ui/Avatar";
@@ -182,16 +183,23 @@ export default function ProfilePage() {
           { icon: <Trophy size={18} className="text-brand-earth" />, label: "Leaderboard", href: "/leaderboard" },
           { icon: <Settings size={18} className="text-brand-muted" />, label: "Settings", href: "#" },
           { icon: <HelpCircle size={18} className="text-brand-info" />, label: "Help & Support", href: "#" },
-          { icon: <LogOut size={18} className="text-brand-danger" />, label: "Log Out", href: "#", danger: true },
         ].map((item) => (
           <Link key={item.label} href={item.href}>
             <div className="lufora-card-hover p-3.5 flex items-center gap-3 mb-1.5">
               {item.icon}
-              <span className={cn("text-sm font-medium flex-1", item.danger ? "text-brand-danger" : "text-brand-dark")}>{item.label}</span>
+              <span className={cn("text-sm font-medium flex-1", "text-brand-dark")}>{item.label}</span>
               <ChevronRight size={16} className="text-brand-muted" />
             </div>
           </Link>
         ))}
+
+        <button onClick={() => signOut({ callbackUrl: "/login" })} className="w-full text-left">
+          <div className="lufora-card-hover p-3.5 flex items-center gap-3 mb-1.5">
+            <LogOut size={18} className="text-brand-danger" />
+            <span className="text-sm font-medium flex-1 text-brand-danger">Log Out</span>
+            <ChevronRight size={16} className="text-brand-muted" />
+          </div>
+        </button>
       </div>
     </div>
   );

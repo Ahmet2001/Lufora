@@ -16,6 +16,11 @@ export async function GET() {
     },
   });
 
+  if (profile) {
+    // @ts-expect-error - removing passwordHash
+    delete profile.passwordHash;
+  }
+
   return success(profile);
 }
 
@@ -31,6 +36,9 @@ export async function PATCH(request: Request) {
     where: { id: user.id },
     data: parsed.data,
   });
+
+  // @ts-expect-error - removing passwordHash
+  delete updated.passwordHash;
 
   return success(updated);
 }

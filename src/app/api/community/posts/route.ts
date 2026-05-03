@@ -6,8 +6,6 @@ import { success, created, unauthorized, validationError } from "@/lib/api-helpe
 import { createPostSchema } from "@/lib/validations";
 
 export async function GET(request: Request) {
-  const user = await getCurrentUser();
-  if (!user) return unauthorized();
 
   const { searchParams } = new URL(request.url);
   const category = searchParams.get("category");
