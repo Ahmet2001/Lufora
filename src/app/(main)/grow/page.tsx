@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight, Plus } from "lucide-react";
+import { ChevronRight, Plus, Sparkles } from "lucide-react";
 import Link from "next/link";
 import Badge from "@/components/ui/Badge";
 import ProgressBar from "@/components/ui/ProgressBar";
@@ -118,6 +118,24 @@ export default function GrowPage() {
             })}
           </div>
         </div>
+      </section>
+
+      {/* Matchmaker */}
+      <section className="mb-5 animate-slide-up" style={{ animationDelay: "0.2s" }}>
+        <Link href="/matchmaker">
+          <div className="lufora-card-hover p-4 border-brand-primary/30 bg-gradient-to-r from-brand-soft/40 to-transparent flex items-center justify-between">
+            <div>
+              <h2 className="text-sm font-bold text-brand-dark flex items-center gap-1.5 mb-0.5">
+                <Sparkles size={16} className="text-brand-primary" />
+                Not sure what to grow?
+              </h2>
+              <p className="text-[10px] text-brand-muted">Take our AI quiz to find your perfect plant match.</p>
+            </div>
+            <div className="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center text-brand-primary shrink-0">
+              <ChevronRight size={18} />
+            </div>
+          </div>
+        </Link>
       </section>
 
       {/* Start Options */}

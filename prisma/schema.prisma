@@ -15,6 +15,8 @@ model User {
   email         String   @unique
   passwordHash  String?
   avatarUrl     String?
+  bio           String?
+  isPublicProfile Boolean @default(true)
   level         Int      @default(1)
   totalPoints   Int      @default(0)
   currentStreak Int      @default(0)

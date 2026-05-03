@@ -198,6 +198,88 @@ export async function growGuideAnswer(input: { plantName: string; currentStage: 
   };
 }
 
+// ─── plantMatchmaker ───
+export async function plantMatchmaker(input: {
+  environmentType?: string;
+  lightLevel?: string;
+  careFrequency?: string;
+  experienceLevel?: string;
+  hasPets?: boolean;
+}) {
+  await delay(1500);
+  
+  const recommendations = [
+    {
+      plantName: "Pothos",
+      species: "Epipremnum aureum",
+      difficulty: "Easy",
+      whyItFits: "Works well in medium light and tolerates missed watering. Perfect for beginners.",
+      careSummary: "Water when the top 2 inches of soil are dry. Prefers indirect light.",
+      lightNeeds: "Medium indirect light",
+      wateringNeeds: "Every 7–10 days",
+      petSafetyNote: "Toxic to cats and dogs if ingested.",
+      recommendedStartType: "cutting",
+      nextAction: "Start a Grow Journey from cutting",
+      confidence: 0.95,
+    },
+    {
+      plantName: "Snake Plant",
+      species: "Sansevieria trifasciata",
+      difficulty: "Easy",
+      whyItFits: "Extremely resilient, thrives on neglect, and does well in low light.",
+      careSummary: "Water very sparingly. Let soil dry out completely between waterings.",
+      lightNeeds: "Low to bright indirect light",
+      wateringNeeds: "Every 2–3 weeks",
+      petSafetyNote: "Toxic to pets if ingested.",
+      recommendedStartType: "seedling",
+      nextAction: "Add to My Plants",
+      confidence: 0.88,
+    },
+    {
+      plantName: "Spider Plant",
+      species: "Chlorophytum comosum",
+      difficulty: "Easy",
+      whyItFits: "Fast grower, fun to propagate, and completely pet-safe.",
+      careSummary: "Water when top layer of soil is dry. They like slightly more moisture than Pothos.",
+      lightNeeds: "Bright indirect light",
+      wateringNeeds: "Every 7 days",
+      petSafetyNote: "Safe for pets (non-toxic).",
+      recommendedStartType: "seedling",
+      nextAction: "Add to My Plants",
+      confidence: 0.92,
+    }
+  ];
+
+  // Simple filtering logic for mock
+  let filtered = recommendations;
+  if (input.hasPets) {
+    filtered = recommendations.filter(r => r.petSafetyNote.includes("Safe"));
+  }
+  
+  if (filtered.length === 0) {
+     filtered = [
+       {
+        plantName: "Boston Fern",
+        species: "Nephrolepis exaltata",
+        difficulty: "Intermediate",
+        whyItFits: "Pet safe option that loves humidity.",
+        careSummary: "Keep soil consistently moist and provide high humidity.",
+        lightNeeds: "Bright indirect light",
+        wateringNeeds: "Every 3-5 days",
+        petSafetyNote: "Safe for pets (non-toxic).",
+        recommendedStartType: "seedling",
+        nextAction: "Add to My Plants",
+        confidence: 0.85,
+       }
+     ]
+  }
+
+  return {
+    recommendations: filtered,
+    disclaimer: "These are AI-generated suggestions based on your lifestyle inputs."
+  };
+}
+
 // ─── Utility ───
 function delay(ms: number) {
   return new Promise((r) => setTimeout(r, ms));

@@ -1,6 +1,7 @@
 "use client";
 
-import { ChevronRight, Crown, Flame, HelpCircle, Leaf, LogOut, Settings, Sprout, Star, Trophy } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ChevronRight, Crown, Flame, HelpCircle, Leaf, LogOut, Settings, Sprout, Star, Trophy, Globe, Lock } from "lucide-react";
 import Link from "next/link";
 import Avatar from "@/components/ui/Avatar";
 import Badge from "@/components/ui/Badge";
@@ -27,6 +28,28 @@ export default function ProfilePage() {
     () => api.getAllBadges(),
     MOCK_BADGES.map(b => ({ ...b, category: "general", requiredCount: 1 }))
   );
+
+  const [isPublic, setIsPublic] = useState(true);
+  const [updating, setUpdating] = useState(false);
+
+  useEffect(() => {
+    if (profile && profile.isPublicProfile !== undefined) {
+      setIsPublic(profile.isPublicProfile);
+    }
+  }, [profile]);
+
+  const togglePublicProfile = async () => {
+    if (updating || !profile) return;
+    setUpdating(true);
+    try {
+      await api.updateProfile({ isPublicProfile: !isPublic });
+      setIsPublic(!isPublic);
+    } catch (err) {
+      console.error("Failed to update profile privacy", err);
+    } finally {
+      setUpdating(false);
+    }
+  };
 
   const user = profile || { ...MOCK_USER, totalPoints: MOCK_USER.points, badges: [] };
   const earnedBadgeIds = new Set((user.badges || []).map(b => b?.badge?.id).filter(Boolean));
@@ -126,8 +149,35 @@ export default function ProfilePage() {
         </div>
       </section>
 
-      {/* Menu */}
+      {/* Menu & Settings */}
       <div className="space-y-1.5 animate-slide-up" style={{ animationDelay: "0.2s" }}>
+        {/* Privacy Toggle */}
+        <div className="lufora-card p-4 flex flex-col gap-2 mb-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              {isPublic ? <Globe size={18} className="text-brand-info" /> : <Lock size={18} className="text-brand-muted" />}
+              <span className="text-sm font-medium text-brand-dark">Public Profile</span>
+            </div>
+            <button 
+              onClick={togglePublicProfile} 
+              disabled={updating}
+              className={cn(
+                "w-12 h-6 rounded-full transition-colors relative", 
+                isPublic ? "bg-brand-primary" : "bg-surface-200",
+                updating && "opacity-50"
+              )}
+            >
+              <div className={cn(
+                "w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all shadow-sm",
+                isPublic ? "left-[26px]" : "left-0.5"
+              )} />
+            </button>
+          </div>
+          <p className="text-[10px] text-brand-muted ml-7 leading-relaxed">
+            Allow other users to view your score, badges, public plants, grow journeys, and posts.
+          </p>
+        </div>
+
         {[
           { icon: <Trophy size={18} className="text-brand-earth" />, label: "Leaderboard", href: "/leaderboard" },
           { icon: <Settings size={18} className="text-brand-muted" />, label: "Settings", href: "#" },

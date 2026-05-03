@@ -27,7 +27,9 @@ export const api = {
   // User
   getMe: () => request<ApiUser>("/api/me"),
   getProfile: () => request<ApiProfile>("/api/profile"),
+  updateProfile: (data: Partial<ApiProfile>) => request<ApiProfile>("/api/profile", { method: "PATCH", body: JSON.stringify(data) }),
   getMyBadges: () => request<ApiBadge[]>("/api/me/badges"),
+  getPublicProfile: (id: string) => request<ApiPublicProfile>(`/api/users/${id}/public-profile`),
 
   // Plants — normalize: API returns `roomLocation`, frontend expects `location`
   getPlants: async () => {
@@ -76,6 +78,9 @@ export const api = {
 
   growGuide: (data: { journeyId: string; question: string }) =>
     request<ApiGuideResult>("/api/ai/grow-guide", { method: "POST", body: JSON.stringify(data) }),
+
+  plantMatchmaker: (data: { environmentType?: string; lightLevel?: string; careFrequency?: string; experienceLevel?: string; hasPets?: boolean; }) =>
+    request<ApiMatchmakerResult>("/api/ai/plant-matchmaker", { method: "POST", body: JSON.stringify(data) }),
 };
 
 // ─── Types (match API response shapes) ───
@@ -85,6 +90,8 @@ export interface ApiUser {
   name: string;
   email: string;
   avatarUrl: string | null;
+  bio?: string | null;
+  isPublicProfile?: boolean;
   totalPoints: number;
   level: number;
   streak?: number;
@@ -310,4 +317,45 @@ export interface ApiGuideResult {
   answer: string;
   tips: string[];
   disclaimer: string;
+}
+
+export interface ApiMatchmakerResult {
+  recommendations: {
+    plantName: string;
+    species: string;
+    difficulty: string;
+    whyItFits: string;
+    careSummary: string;
+    lightNeeds: string;
+    wateringNeeds: string;
+    petSafetyNote: string;
+    recommendedStartType: string;
+    nextAction: string;
+    confidence: number;
+  }[];
+  disclaimer: string;
+}
+
+export interface ApiPublicProfile {
+  isPrivate: boolean;
+  user: {
+    id: string;
+    name: string;
+    avatarUrl: string | null;
+    bio?: string | null;
+    level?: number;
+    totalPoints?: number;
+    currentStreak?: number;
+    createdAt?: string;
+    stats?: {
+      badges: number;
+      plants: number;
+      growJourneys: number;
+      communityPosts: number;
+    };
+  };
+  badges?: ApiBadge[];
+  plants?: { id: string; nickname: string; species: string | null; imageUrl: string | null; healthScore: number; status: string }[];
+  growJourneys?: { id: string; plantName: string; startingType: string; currentStage: string; progressPercent: number; dayNumber: number }[];
+  posts?: { id: string; title: string; category: string; likesCount: number; repliesCount: number; createdAt: string }[];
 }

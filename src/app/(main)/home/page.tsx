@@ -130,6 +130,24 @@ export default function HomePage() {
         </section>
       )}
 
+      {/* Matchmaker */}
+      <section className="mb-5 animate-slide-up" style={{ animationDelay: "0.08s" }}>
+        <Link href="/matchmaker">
+          <div className="lufora-card-hover p-4 border-brand-primary/30 bg-gradient-to-r from-brand-soft/40 to-transparent flex items-center justify-between">
+            <div>
+              <h2 className="text-sm font-bold text-brand-dark flex items-center gap-1.5 mb-0.5">
+                <Sparkles size={16} className="text-brand-primary" />
+                Find Your Perfect Plant
+              </h2>
+              <p className="text-[10px] text-brand-muted">Take our AI quiz to get personalized plant recommendations.</p>
+            </div>
+            <div className="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center text-brand-primary shrink-0">
+              <ChevronRight size={18} />
+            </div>
+          </div>
+        </Link>
+      </section>
+
       {/* Active Grow Journey */}
       {activeJourney && (
         <section className="mb-5 animate-slide-up" style={{ animationDelay: "0.1s" }}>

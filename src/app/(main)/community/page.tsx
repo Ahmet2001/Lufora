@@ -93,11 +93,13 @@ export default function CommunityPage() {
                 <div className="lufora-card-hover p-4 mb-3 animate-slide-up" style={{ animationDelay: `${i * 0.05 + 0.1}s` }}>
                   {/* Author */}
                   <div className="flex items-center gap-2.5 mb-2.5">
-                    <Avatar name={post.author?.name || "Lufora User"} size="sm" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-brand-dark">{post.author?.name || "Lufora User"}</p>
-                      <p className="text-[10px] text-brand-muted">{timeAgo(post.createdAt)}</p>
-                    </div>
+                    <Link href={`/users/${post.author?.id || "demo-id"}`} className="flex items-center gap-2.5 flex-1 min-w-0" onClick={(e) => e.stopPropagation()}>
+                      <Avatar name={post.author?.name || "Lufora User"} size="sm" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-brand-dark hover:underline">{post.author?.name || "Lufora User"}</p>
+                        <p className="text-[10px] text-brand-muted">{timeAgo(post.createdAt)}</p>
+                      </div>
+                    </Link>
                     {category && <Badge variant="neutral">{category.emoji} {category.label}</Badge>}
                   </div>
 

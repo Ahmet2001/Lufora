@@ -9,6 +9,7 @@ export const createPlantSchema = z.object({
   lightLevel: z.string().max(30).optional(),
   hasDrainage: z.boolean().optional(),
   city: z.string().max(50).optional(),
+  lastWateredAt: z.string().datetime().optional(),
 });
 
 export const updatePlantSchema = createPlantSchema.partial();
@@ -113,4 +114,18 @@ export const growGuideSchema = z.object({
 export const updateProfileSchema = z.object({
   name: z.string().min(1).max(50).optional(),
   avatarUrl: z.string().url().optional(),
+  bio: z.string().max(160).optional(),
+  isPublicProfile: z.boolean().optional(),
+});
+
+// ─── Matchmaker ───
+export const matchmakerSchema = z.object({
+  environmentType: z.string().optional(),
+  city: z.string().optional(),
+  lightLevel: z.string().optional(),
+  careFrequency: z.string().optional(),
+  experienceLevel: z.string().optional(),
+  hasPets: z.boolean().optional(),
+  preferredStyle: z.string().optional(),
+  startType: z.string().optional(),
 });
