@@ -29,8 +29,8 @@ export default function ProfilePage() {
   );
 
   const user = profile || { ...MOCK_USER, totalPoints: MOCK_USER.points, badges: [] };
-  const earnedBadgeIds = new Set((user.badges || []).map(b => b.badge.id));
-  const earnedBadges = (user.badges || []).map(b => b.badge);
+  const earnedBadgeIds = new Set((user.badges || []).map(b => b?.badge?.id).filter(Boolean));
+  const earnedBadges = (user.badges || []).map(b => b?.badge).filter(Boolean);
   const lockedBadges = (allBadges || []).filter(b => !earnedBadgeIds.has(b.id));
 
   if (loading) {
@@ -50,8 +50,8 @@ export default function ProfilePage() {
     <div className="page-container bottom-safe">
       {/* Header */}
       <div className="flex flex-col items-center text-center mb-6 animate-fade-in">
-        <Avatar name={user.name} size="xl" className="mb-3 ring-4 ring-brand-soft" />
-        <h1 className="page-title">{user.name}</h1>
+        <Avatar name={user?.name || "Ada Green"} size="xl" className="mb-3 ring-4 ring-brand-soft" />
+        <h1 className="page-title">{user?.name || "Ada Green"}</h1>
         <p className="text-sm text-brand-muted">{user.email}</p>
         <div className="flex items-center gap-1.5 mt-2">
           <Badge variant="primary">⭐ Level {user.level}</Badge>
@@ -62,7 +62,7 @@ export default function ProfilePage() {
       <div className="grid grid-cols-4 gap-2 mb-5 animate-slide-up">
         {[
           { icon: <TrophyIcon />, label: "Points", value: user.totalPoints },
-          { icon: <Flame size={16} className="text-orange-500" />, label: "Streak", value: `${user.streak}d` },
+          { icon: <Flame size={16} className="text-orange-500" />, label: "Streak", value: `${user?.streak ?? user?.currentStreak ?? 0}d` },
           { icon: <Leaf size={16} className="text-brand-primary" />, label: "Plants", value: user._count?.plants ?? MOCK_USER.plantCount },
           { icon: <Sprout size={16} className="text-brand-earth" />, label: "Journeys", value: user._count?.growJourneys ?? MOCK_USER.activeJourneys },
         ].map((stat) => (
@@ -91,17 +91,17 @@ export default function ProfilePage() {
           {earnedBadges.map((b) => (
             <div key={b.id} className="flex flex-col items-center gap-1 w-16">
               <div className="w-13 h-13 rounded-full bg-brand-soft border-2 border-brand-primary/30 flex items-center justify-center text-2xl shadow-sm">
-                {b.iconEmoji}
+                {b?.iconEmoji || b?.icon || "🏅"}
               </div>
-              <span className="text-[10px] font-medium text-brand-dark text-center leading-tight">{b.name}</span>
+              <span className="text-[10px] font-medium text-brand-dark text-center leading-tight">{b?.name || "Badge"}</span>
             </div>
           ))}
           {lockedBadges.map((b) => (
             <div key={b.id} className="flex flex-col items-center gap-1 w-16 opacity-35">
               <div className="w-13 h-13 rounded-full bg-surface-100 border-2 border-surface-200 flex items-center justify-center text-2xl grayscale">
-                {b.iconEmoji}
+                {b?.iconEmoji || b?.icon || "🏅"}
               </div>
-              <span className="text-[10px] font-medium text-brand-muted text-center leading-tight">{b.name}</span>
+              <span className="text-[10px] font-medium text-brand-muted text-center leading-tight">{b?.name || "Badge"}</span>
             </div>
           ))}
         </div>

@@ -91,7 +91,7 @@ export default function LeaderboardPage() {
             <div className="lufora-card p-3.5 mb-5 border-brand-primary/30 bg-brand-soft/30 animate-slide-up" style={{ animationDelay: "0.1s" }}>
               <div className="flex items-center gap-3">
                 <span className="text-lg font-bold text-brand-primary w-8 text-center">#{currentUser.rank}</span>
-                <Avatar name={currentUser.name} size="md" />
+                <Avatar name={currentUser?.name || "User"} size="md" />
                 <div className="flex-1">
                   <p className="text-sm font-semibold text-brand-dark">You</p>
                   <p className="text-xs text-brand-muted">{currentUser.totalPoints} pts</p>
@@ -106,28 +106,28 @@ export default function LeaderboardPage() {
             <div className="flex items-end justify-center gap-3 mb-6 animate-scale-in" style={{ animationDelay: "0.15s" }}>
               {/* 2nd */}
               <div className="flex flex-col items-center w-24">
-                <Avatar name={top3[1].name} size="lg" className="mb-2" />
+                <Avatar name={top3[1]?.name || "User"} size="lg" className="mb-2" />
                 <div className="w-full bg-surface-200 rounded-t-xl pt-3 pb-2 text-center">
                   <Medal size={18} className="mx-auto text-gray-400 mb-1" />
-                  <p className="text-xs font-semibold text-brand-dark truncate px-1">{top3[1].name.split(" ")[0]}</p>
+                  <p className="text-xs font-semibold text-brand-dark truncate px-1">{(top3[1]?.name || "User").split(" ")[0]}</p>
                   <p className="text-[10px] text-brand-muted">{top3[1].totalPoints} pts</p>
                 </div>
               </div>
               {/* 1st */}
               <div className="flex flex-col items-center w-28">
                 <Crown size={24} className="text-amber-500 mb-1" />
-                <Avatar name={top3[0].name} size="xl" className="mb-2 ring-4 ring-amber-200" />
+                <Avatar name={top3[0]?.name || "User"} size="xl" className="mb-2 ring-4 ring-amber-200" />
                 <div className="w-full bg-gradient-to-b from-amber-50 to-amber-100 rounded-t-xl pt-3 pb-2 text-center border border-amber-200/50">
-                  <p className="text-sm font-bold text-brand-dark truncate px-1">{top3[0].name.split(" ")[0]}</p>
+                  <p className="text-sm font-bold text-brand-dark truncate px-1">{(top3[0]?.name || "User").split(" ")[0]}</p>
                   <p className="text-xs text-brand-earth font-semibold">{top3[0].totalPoints} pts</p>
                 </div>
               </div>
               {/* 3rd */}
               <div className="flex flex-col items-center w-24">
-                <Avatar name={top3[2].name} size="lg" className="mb-2" />
+                <Avatar name={top3[2]?.name || "User"} size="lg" className="mb-2" />
                 <div className="w-full bg-surface-200 rounded-t-xl pt-3 pb-2 text-center">
                   <Award size={18} className="mx-auto text-amber-600 mb-1" />
-                  <p className="text-xs font-semibold text-brand-dark truncate px-1">{top3[2].name.split(" ")[0]}</p>
+                  <p className="text-xs font-semibold text-brand-dark truncate px-1">{(top3[2]?.name || "User").split(" ")[0]}</p>
                   <p className="text-[10px] text-brand-muted">{top3[2].totalPoints} pts</p>
                 </div>
               </div>
@@ -141,10 +141,10 @@ export default function LeaderboardPage() {
               return (
                 <div key={user.rank} className={cn("lufora-card p-3.5 flex items-center gap-3", isCurrent && "border-brand-primary/30 bg-brand-soft/20")}>
                   <span className="text-sm font-bold text-brand-muted w-6 text-center">{user.rank}</span>
-                  <Avatar name={user.name} size="sm" />
+                  <Avatar name={user?.name || "User"} size="sm" />
                   <div className="flex-1 min-w-0">
                     <p className={cn("text-sm font-medium truncate", isCurrent ? "text-brand-primary font-semibold" : "text-brand-dark")}>
-                      {user.name} {isCurrent && "(You)"}
+                      {user?.name || "User"} {isCurrent && "(You)"}
                     </p>
                     <p className="text-[10px] text-brand-muted">Level {user.level}</p>
                   </div>

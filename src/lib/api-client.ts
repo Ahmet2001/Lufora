@@ -29,9 +29,15 @@ export const api = {
   getProfile: () => request<ApiProfile>("/api/profile"),
   getMyBadges: () => request<ApiBadge[]>("/api/me/badges"),
 
-  // Plants
-  getPlants: () => request<ApiPlant[]>("/api/plants"),
-  getPlant: (id: string) => request<ApiPlantDetail>(`/api/plants/${id}`),
+  // Plants — normalize: API returns `roomLocation`, frontend expects `location`
+  getPlants: async () => {
+    const raw = await request<RawApiPlant[]>("/api/plants");
+    return raw.map(normalizePlant);
+  },
+  getPlant: async (id: string) => {
+    const raw = await request<RawApiPlant>(`/api/plants/${id}`);
+    return normalizePlant(raw) as ApiPlantDetail;
+  },
   getPlantHealthLogs: (id: string) => request<ApiHealthLog[]>(`/api/plants/${id}/health-logs`),
 
   // Tasks
@@ -43,18 +49,23 @@ export const api = {
   getJourneys: () => request<ApiJourney[]>("/api/grow-journeys"),
   getJourney: (id: string) => request<ApiJourneyDetail>(`/api/grow-journeys/${id}`),
 
-  // Community
-  getPosts: (params?: { category?: string; search?: string }) => {
+  // Community — normalize: API returns `user`, frontend expects `author`
+  getPosts: async (params?: { category?: string; search?: string }) => {
     const searchParams = new URLSearchParams();
     if (params?.category) searchParams.set("category", params.category);
     if (params?.search) searchParams.set("search", params.search);
     const qs = searchParams.toString();
-    return request<ApiPost[]>(`/api/community/posts${qs ? `?${qs}` : ""}`);
+    const raw = await request<RawApiPost[]>(`/api/community/posts${qs ? `?${qs}` : ""}`);
+    return raw.map(normalizePost);
   },
 
-  // Leaderboard
-  getLeaderboard: (period?: string) =>
-    request<ApiLeaderboardEntry[]>(`/api/leaderboard${period ? `?period=${period}` : ""}`),
+  // Leaderboard — normalize: API returns { period, leaderboard } wrapper with `points`
+  getLeaderboard: async (period?: string) => {
+    const raw = await request<RawLeaderboardResponse | ApiLeaderboardEntry[]>(`/api/leaderboard${period ? `?period=${period}` : ""}`);
+    // Handle both wrapped { period, leaderboard } and flat array responses
+    const entries = Array.isArray(raw) ? raw : (raw as RawLeaderboardResponse).leaderboard || [];
+    return entries.map(normalizeLeaderboardEntry);
+  },
 
   // Badges
   getAllBadges: () => request<ApiBadge[]>("/api/badges"),
@@ -76,21 +87,25 @@ export interface ApiUser {
   avatarUrl: string | null;
   totalPoints: number;
   level: number;
-  streak: number;
-  _count?: { plants: number; growJourneys: number; communityPosts: number };
+  streak?: number;
+  currentStreak?: number;
+  _count?: { plants: number; growJourneys: number; communityPosts: number; badges?: number };
 }
 
 export interface ApiProfile extends ApiUser {
-  badges: { badge: ApiBadge; awardedAt: string }[];
+  badges?: { badge: ApiBadge; unlockedAt?: string; awardedAt?: string }[];
 }
 
 export interface ApiBadge {
   id: string;
+  code?: string;
   name: string;
-  iconEmoji: string;
+  icon?: string | null;
+  iconEmoji?: string;
   description: string;
   category: string;
-  requiredCount: number;
+  requiredCount?: number;
+  pointsReward?: number;
 }
 
 export interface ApiPlant {
@@ -106,20 +121,62 @@ export interface ApiPlant {
   createdAt: string;
   tasks?: ApiTask[];
   healthLogs?: ApiHealthLog[];
-  photos?: { id: string; imageUrl: string; caption: string | null; createdAt: string }[];
+  photos?: { id: string; imageUrl: string; caption?: string | null; note?: string | null; createdAt: string }[];
 }
 
+// Raw shape from Prisma Plant model
+interface RawApiPlant {
+  id: string;
+  nickname: string;
+  species: string | null;
+  imageUrl: string | null;
+  roomLocation?: string | null;
+  location?: string;
+  healthScore: number;
+  status: string;
+  acquiredDate?: string | null;
+  createdAt: string;
+  updatedAt?: string;
+  notes?: string | null;
+  lightLevel?: string | null;
+  city?: string | null;
+  tasks?: ApiTask[];
+  healthLogs?: ApiHealthLog[];
+  photos?: { id: string; imageUrl: string; caption?: string | null; note?: string | null; createdAt: string }[];
+  _count?: Record<string, number>;
+  [key: string]: unknown;
+}
+
+function normalizePlant(raw: RawApiPlant): ApiPlant {
+  return {
+    id: raw.id,
+    nickname: raw.nickname || "Plant",
+    species: raw.species || null,
+    imageUrl: raw.imageUrl || null,
+    location: raw.location || raw.roomLocation || "indoor",
+    healthScore: raw.healthScore ?? 80,
+    status: raw.status || "active",
+    acquiredDate: raw.acquiredDate || raw.createdAt || null,
+    notes: raw.notes || null,
+    createdAt: raw.createdAt,
+    tasks: raw.tasks,
+    healthLogs: raw.healthLogs,
+    photos: raw.photos,
+  };
+}
 export interface ApiPlantDetail extends ApiPlant {
   tasks: ApiTask[];
   healthLogs: ApiHealthLog[];
-  photos: { id: string; imageUrl: string; caption: string | null; createdAt: string }[];
+  photos: { id: string; imageUrl: string; caption?: string | null; note?: string | null; createdAt: string }[];
 }
 
 export interface ApiHealthLog {
   id: string;
   score: number;
-  note: string | null;
-  source: string;
+  note?: string | null;
+  aiSummary?: string | null;
+  source?: string;
+  status?: string | null;
   createdAt: string;
 }
 
@@ -178,14 +235,66 @@ export interface ApiPost {
   author: { id: string; name: string; avatarUrl: string | null };
 }
 
+// Raw shape from API (user instead of author)
+interface RawApiPost {
+  id: string;
+  title: string;
+  content: string;
+  imageUrl: string | null;
+  category: string;
+  likesCount: number;
+  repliesCount: number;
+  createdAt: string;
+  user?: { id: string; name: string; avatarUrl: string | null };
+  author?: { id: string; name: string; avatarUrl: string | null };
+}
+
+function normalizePost(raw: RawApiPost): ApiPost {
+  const author = raw.author || raw.user || { id: "unknown", name: "Lufora User", avatarUrl: null };
+  return { ...raw, author };
+}
+
 export interface ApiLeaderboardEntry {
   id: string;
   name: string;
   avatarUrl: string | null;
   totalPoints: number;
   level: number;
-  _count: { plants: number; communityPosts: number };
   rank?: number;
+  badges?: number;
+  tasks?: number;
+  posts?: number;
+  streak?: number;
+  _count?: { plants: number; communityPosts: number };
+}
+
+// Raw shape from leaderboard API
+interface RawLeaderboardResponse {
+  period: string;
+  leaderboard: RawLeaderboardEntry[];
+}
+
+interface RawLeaderboardEntry {
+  id: string;
+  name: string;
+  avatarUrl: string | null;
+  totalPoints?: number;
+  points?: number;
+  level: number;
+  rank?: number;
+  badges?: number;
+  tasks?: number;
+  posts?: number;
+  streak?: number;
+  _count?: { plants: number; communityPosts: number };
+}
+
+function normalizeLeaderboardEntry(raw: RawLeaderboardEntry, i: number): ApiLeaderboardEntry {
+  return {
+    ...raw,
+    totalPoints: raw.totalPoints ?? raw.points ?? 0,
+    rank: raw.rank || i + 1,
+  };
 }
 
 export interface ApiDoctorResult {

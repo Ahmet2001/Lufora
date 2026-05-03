@@ -26,7 +26,7 @@ export default function HomePage() {
   })));
 
   const userName = user?.name || MOCK_USER.name;
-  const streak = user?.streak ?? MOCK_USER.streak;
+  const streak = user?.streak ?? user?.currentStreak ?? MOCK_USER.streak;
   const attentionPlant = plants?.reduce((min, p) => (!min || p.healthScore < min.healthScore) ? p : min, null as typeof plants[0] | null);
   const attentionPlantBelow80 = attentionPlant && attentionPlant.healthScore < 80 ? attentionPlant : null;
   const activeJourney = journeys?.find((j) => j.status === "active");
@@ -200,8 +200,8 @@ export default function HomePage() {
             <Link key={post.id} href="/community">
               <div className="lufora-card-hover p-3.5 mb-3">
                 <div className="flex items-center gap-2 mb-2">
-                  <Avatar name={post.author.name} size="xs" />
-                  <span className="text-xs font-medium text-brand-dark">{post.author.name}</span>
+                  <Avatar name={post.author?.name || "Lufora User"} size="xs" />
+                  <span className="text-xs font-medium text-brand-dark">{post.author?.name || "Lufora User"}</span>
                   <span className="text-[10px] text-brand-muted">{timeAgo(post.createdAt)}</span>
                 </div>
                 <p className="text-sm font-medium text-brand-dark mb-2 line-clamp-2">{post.title}</p>
