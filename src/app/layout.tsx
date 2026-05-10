@@ -8,6 +8,9 @@ export const metadata: Metadata = {
     "AI-powered social plant care app. Track your plants, grow from seeds, and join a community of plant lovers.",
   keywords: ["plants", "plant care", "gardening", "grow journey", "plant health"],
   authors: [{ name: "Lufora" }],
+  verification: {
+    google: "L7CJKImj6FZ3kPsuuPpVMBRuDKvvQ_-pd7kWQxVd79A",
+  },
 };
 
 export const viewport: Viewport = {
