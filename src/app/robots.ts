@@ -6,15 +6,18 @@ export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
       userAgent: "*",
-      allow: ["/", "/community", "/login", "/register", "/leaderboard"],
+      // By default, everything is allowed. We just explicitly disallow private routes.
+      allow: "/",
       disallow: [
-        "/home",
-        "/plants",
-        "/grow",
-        "/profile",
-        "/calendar",
-        "/matchmaker",
-        "/api/",
+        "/home",        // Private dashboard
+        "/plants",      // Private plant management
+        "/grow",        // Private grow journals
+        "/profile",     // Private user settings
+        "/calendar",    // Private calendar
+        "/matchmaker",  // Private matchmaker tool
+        "/api/",        // Backend API routes
+        "/login",       // Auth pages don't need indexing
+        "/register",    // Auth pages don't need indexing
       ],
     },
     sitemap: `${baseUrl}/sitemap.xml`,
